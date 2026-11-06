@@ -33,6 +33,26 @@ if (-not (git config user.email)) {
     Write-Host 'Change it any time with: git config user.email you@example.com'
 }
 
+# Warn about a stale git proxy (a very common cause of "cannot push").
+$proxy = git config --get http.proxy
+if ($proxy) {
+    $reachable = $false
+    try {
+        $uri = [System.Uri]$proxy
+        $client = New-Object System.Net.Sockets.TcpClient
+        $async = $client.ConnectAsync($uri.Host, $uri.Port)
+        $reachable = $async.Wait(1500) -and $client.Connected
+        $client.Close()
+    } catch {
+        $reachable = $false
+    }
+    if (-not $reachable) {
+        Write-Host "Warning: git proxy '$proxy' is not reachable, so push may fail." -ForegroundColor Yellow
+        Write-Host 'Fix with:  git config --global --unset http.proxy'
+        Write-Host 'Or point it at your running proxy, e.g.:  git config --global http.proxy http://127.0.0.1:7000'
+    }
+}
+
 if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot '.git'))) {
     git init
 }
