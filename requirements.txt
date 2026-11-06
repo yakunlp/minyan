@@ -1,0 +1,6 @@
+streamlit>=1.41,<2
+faster-whisper>=1.1,<2
+# faster-whisper 1.2.1 passes metadata_errors to av.open; PyAV 19 removed it.
+av==16.0.1
+sherpa-onnx==2.0.1
+qrcode>=7,<9
